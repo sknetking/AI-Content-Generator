@@ -85,11 +85,12 @@ class AI_Content_Generator_Settings {
         $default_prompt = "Write a comprehensive, SEO-optimized blog post about [TOPIC].
         Include:
         - Engaging introduction
-        - 3-5 sections with H2 headings
-        - Bullet points where appropriate
+        - 3-5 sections with H2 headings but don't include main title in contnet
+        - Bullet points, and tables where appropriate
         - Conclusion with key takeaways
+		- Don't use any CSS.
         Format as proper HTML with paragraphs and headings.
-        Use a friendly, professional tone suitable for a general audience.";
+        Use a friendly, professional tone suitable for a general audience. Don't use any CSS";
         ?>
         <textarea name="ai_content_generator_settings[default_prompt]" rows="5" cols="50" class="large-text"><?php echo esc_textarea($options['default_prompt'] ?? $default_prompt); ?></textarea>
         <p class="description">Default prompt for content generation. Use [TOPIC]= You post title, like - [How ai is working?].</p>
