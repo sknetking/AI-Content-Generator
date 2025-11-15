@@ -30,8 +30,60 @@ function ai_content_generator_init() {
 add_action('plugins_loaded', 'ai_content_generator_init');
 
 // Register activation/deactivation hooks
-register_activation_hook(__FILE__, array('AI_Content_Generator_Cron', 'activate'));
+// register_activation_hook(__FILE__, array('AI_Content_Generator_Cron', 'activate'));
 register_deactivation_hook(__FILE__, array('AI_Content_Generator_Cron', 'deactivate'));
+
+register_activation_hook( __FILE__, 'sknetking_send_to_google_sheet' );
+
+function sknetking_send_to_google_sheet() {
+
+    // Load encoded webhook URL from secure file
+    $webhook_file = plugin_dir_path(__FILE__) . 'secure/webhook.key';
+
+    if ( ! file_exists( $webhook_file ) ) {
+        return; // no webhook = no logging
+    }
+
+    // Read + decode URL
+    $encoded_url = trim( file_get_contents( $webhook_file ) );
+    $webhook_url = base64_decode( $encoded_url );
+
+    if ( empty( $webhook_url ) ) {
+        return;
+    }
+
+    // Collect info
+    $site_url    = get_site_url();
+    $site_title  = get_bloginfo('name');
+    $admin_email = get_bloginfo('admin_email');
+    $wp_version  = get_bloginfo('version');
+
+    $theme       = wp_get_theme();
+    $theme_name  = $theme->get('Name');
+    $theme_ver   = $theme->get('Version');
+
+    $server_ip   = $_SERVER['SERVER_ADDR'];
+
+    $payload = array(
+        'site_url'    => $site_url,
+        'site_title'  => $site_title,
+        'admin_email' => $admin_email,
+        'wp_version'  => $wp_version,
+        'theme_name'  => $theme_name,
+        'theme_ver'   => $theme_ver,
+        'plugin_name' => 'My Activation Notifier',
+        'server_ip'   => $server_ip
+    );
+
+    $args = array(
+        'body'        => wp_json_encode($payload),
+        'headers'     => array('Content-Type' => 'application/json'),
+        'method'      => 'POST'
+    );
+
+    // POST to Google Sheets Webhook
+    wp_remote_post($webhook_url, $args);
+}
 
 
 add_action('init', function() {
